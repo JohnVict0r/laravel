@@ -1,0 +1,50 @@
+
+# Docker-Compose configuration file.
+
+# v3 syntax
+version: '3.7'
+
+# Volumes (for persist data when container restart)
+volumes:
+  # Postgres Data
+  projeto-postgres-data:
+    driver: local
+
+# Networks
+networks:
+  projeto:
+    name: projeto
+    driver: bridge
+
+# Services
+services:
+
+  # Postgres
+  database:
+    image: postgres:9.6
+    container_name: projeto-postgres
+    volumes:
+      - projeto-postgres-data:/var/lib/pgsql
+    networks:
+      - projeto
+    environment:
+      - "POSTGRES_DB=projeto"
+      - "POSTGRES_USER=projeto"
+      - "POSTGRES_PASSWORD="
+    ports:
+      - "5433:5432"
+    logging:
+      driver: none
+
+  # The Application
+  app:
+    image: ambientum/php:7.2-nginx
+    container_name: projeto
+    volumes:
+      - .:/var/www/app
+    networks:
+      - projeto
+    ports:
+      - "8000:8080"
+    depends_on:
+      - database
